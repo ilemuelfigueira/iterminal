@@ -1,0 +1,32 @@
+{
+  "name": "Root Loops Blackberry",
+  "base": "dark",
+  "overrides": {
+    "claude":               "#B799EC",
+    "text":                 "#F0F0F0",
+    "inverseText":          "#0A0A0A",
+    "inactive":             "#9B30FF",
+    "subtle":               "#2A1446",
+    "suggestion":           "#00ABC0",
+    "permission":           "#BA9300",
+    "remember":             "#718FFF",
+    "success":              "#00B754",
+    "error":                "#FF5642",
+    "warning":              "#BA9300",
+    "merged":               "#718FFF",
+    "promptBorder":         "#5573FF",
+    "planMode":             "#BA9300",
+    "autoAccept":           "#00B754",
+    "bashBorder":           "#0094A6",
+    "ide":                  "#718FFF",
+    "fastMode":             "#F700F0",
+    "diffAdded":            "#009E48",
+    "diffRemoved":          "#F41300",
+    "diffAddedDimmed":      "#002718",
+    "diffRemovedDimmed":    "#3D0500",
+    "diffAddedWord":        "#00B754",
+    "diffRemovedWord":      "#FF5642",
+    "userMessageBackground":"#120929",
+    "selectionBg":          "#9B30FF"
+  }
+}

@@ -1,0 +1,1 @@
+/Users/lemuelfigueira/projetos/ilemuelfigueira/iterminal/claude-output-styles/harness-ops.md
