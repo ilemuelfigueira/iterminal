@@ -17,6 +17,10 @@ mkdir -p "$TARGET_DIR"
 
 echo "==> claude themes -> $TARGET_DIR"
 for file in "$REPO_DIR/claude-themes"/*.json; do
+  if [ -L "$file" ]; then
+    echo "  error: source is a symlink, skipping: $(basename "$file")" >&2
+    continue
+  fi
   target="$TARGET_DIR/$(basename "$file")"
   if [ -L "$target" ]; then
     echo "  already linked: $(basename "$file")"

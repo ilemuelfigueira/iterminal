@@ -17,15 +17,15 @@ mkdir -p "$TARGET_DIR"
 
 echo "==> claude output-styles -> $TARGET_DIR"
 for file in "$REPO_DIR/claude-output-styles"/*.md; do
+  if [ -L "$file" ]; then
+    echo "  error: source is a symlink, skipping: $(basename "$file")" >&2
+    continue
+  fi
   target="$TARGET_DIR/$(basename "$file")"
-  if [ -L "$target" ]; then
+  if [ -L "$target" ] && [ "$(readlink "$target")" = "$file" ]; then
     echo "  already linked: $(basename "$file")"
-  elif [ -e "$target" ]; then
-    echo "  replacing with symlink: $(basename "$file")"
-    rm "$target"
-    ln -s "$file" "$target"
   else
-    ln -s "$file" "$target"
+    ln -sf "$file" "$target"
     echo "  linked: $(basename "$file")"
   fi
 done
