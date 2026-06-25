@@ -1,4 +1,4 @@
-# tmux-conf
+# iterminal
 
 Configurações pessoais do tmux baseadas no framework [gpakosz/.tmux](https://github.com/gpakosz/.tmux).
 
@@ -21,7 +21,7 @@ Siga o [README oficial](https://github.com/gpakosz/.tmux#installation). O result
 ### 2. Clonar este repo
 
 ```sh
-git clone https://github.com/ilemuelfigueira/tmux-conf ~/projetos/ilemuelfigueira/tmux-conf
+git clone https://github.com/ilemuelfigueira/iterminal ~/projetos/ilemuelfigueira/iterminal
 ```
 
 Pode clonar em qualquer caminho — ajuste o `TMUX_CONF_LOCAL` no passo seguinte.
@@ -31,7 +31,7 @@ Pode clonar em qualquer caminho — ajuste o `TMUX_CONF_LOCAL` no passo seguinte
 Adicionar no `~/.zshenv` (não `.zshrc` — precisa estar disponível para shells não-interativos):
 
 ```sh
-echo 'export TMUX_CONF_LOCAL="$HOME/projetos/ilemuelfigueira/tmux-conf/tmux.conf"' >> ~/.zshenv
+echo 'export TMUX_CONF_LOCAL="$HOME/projetos/ilemuelfigueira/iterminal/tmux.conf"' >> ~/.zshenv
 ```
 
 ### 4. Evitar conflito do prefix2 C-s
