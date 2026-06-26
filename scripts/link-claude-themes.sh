@@ -16,6 +16,7 @@ esac
 mkdir -p "$TARGET_DIR"
 
 echo "==> claude themes -> $TARGET_DIR"
+shopt -s nullglob
 for file in "$REPO_DIR/claude-themes"/*.json; do
   target="$TARGET_DIR/$(basename "$file")"
   rm -f "$target"
