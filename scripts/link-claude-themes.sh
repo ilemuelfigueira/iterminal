@@ -15,6 +15,11 @@ esac
 
 mkdir -p "$TARGET_DIR"
 
+if [ -L "$TARGET_DIR" ]; then
+  rm "$TARGET_DIR"
+  mkdir -p "$TARGET_DIR"
+fi
+
 echo "==> claude themes -> $TARGET_DIR"
 shopt -s nullglob
 for file in "$REPO_DIR/claude-themes"/*.json; do
