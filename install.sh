@@ -23,5 +23,5 @@ else
   git -C "$REPO_DIR" pull || echo "  warning: git pull failed, continuing with local files" >&2
 fi
 
-bash "$SCRIPTS_DIR/link-claude-themes.sh" "$SCOPE"
-bash "$SCRIPTS_DIR/link-claude-output-styles.sh" "$SCOPE"
+bash "$SCRIPTS_DIR/sync-files.sh" "$SCOPE" "claude-themes"        "*.json" "themes"
+bash "$SCRIPTS_DIR/sync-files.sh" "$SCOPE" "claude-output-styles"  "*.md"   "output-styles"
