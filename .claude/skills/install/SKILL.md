@@ -1,6 +1,6 @@
 ---
 name: install
-description: Install components from the iterminal repo — Claude themes, output-styles, spinner verb packs, iTerm2 themes, tmux config, and Powerline font. Use when user says "install", "instalar", "setup", "configurar repo", "como instalar", "install themes", "install spinner verbs", "instalar temas".
+description: Install components from the iterminal repo — Claude themes, output-styles, spinner verb packs, Claude agents, iTerm2 themes, tmux config, and Powerline font. Use when user says "install", "instalar", "setup", "configurar repo", "como instalar", "install themes", "install spinner verbs", "instalar temas", "install agents", "instalar agentes".
 ---
 
 # Install iterminal Components
@@ -34,14 +34,28 @@ cd claude-code-spinner-verbs
 Available packs: `cassino`, `naruto`, `filosofo-dev`.  
 After installing, run `/clear` or start a new Claude session to apply.
 
-## 3 — iTerm2 Themes
+## 3 — Claude Agents
+
+Copies agent `.md` files to `~/.claude/agents/`.
+
+```bash
+cd claude-agents
+
+./install.sh                  # install all agents
+./install.sh rule-knight      # install only rule-knight
+./install.sh --list           # show available agents
+```
+
+Available agents: `rule-knight` (validates code changes against Claude rules).
+
+## 4 — iTerm2 Themes
 
 Double-click any `.itermcolors` file in `iterm-themes/`, or import via:
 `iTerm2 → Preferences → Profiles → Colors → Color Presets → Import`
 
 Available themes: `github-dark`, `gotham-default`, `moonfly-default`, `root-loops*`, `srcery-default`.
 
-## 4 — tmux Config
+## 5 — tmux Config
 
 Add to `~/.zshenv` (not `.zshrc` — must be available to non-interactive shells):
 
@@ -56,7 +70,7 @@ Also disable `Ctrl+S` freeze in `~/.zshrc`:
 echo 'stty -ixon' >> ~/.zshrc
 ```
 
-## 5 — Powerline Font
+## 6 — Powerline Font
 
 ```bash
 cp .fonts/PowerlineSymbols.otf ~/Library/Fonts/
