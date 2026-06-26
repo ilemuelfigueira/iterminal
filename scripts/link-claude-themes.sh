@@ -13,12 +13,10 @@ case "$SCOPE" in
     ;;
 esac
 
-mkdir -p "$TARGET_DIR"
-
 if [ -L "$TARGET_DIR" ]; then
   rm "$TARGET_DIR"
-  mkdir -p "$TARGET_DIR"
 fi
+mkdir -p "$TARGET_DIR"
 
 echo "==> claude themes -> $TARGET_DIR"
 shopt -s nullglob
