@@ -1,0 +1,33 @@
+{
+  "name": "UitKit Neon",
+  "author": "tushar2704",
+  "colors": {
+    "background": "#0d1117",
+    "foreground": "#e6edf3",
+    "cursor": "#f97316",
+    "selection": "#f9731644",
+    "black": "#0d1117",
+    "red": "#ff7b72",
+    "green": "#3fb950",
+    "yellow": "#d29922",
+    "blue": "#58a6ff",
+    "magenta": "#bc8cff",
+    "cyan": "#39c5cf",
+    "white": "#e6edf3",
+    "brightBlack": "#484f58",
+    "brightRed": "#ffa198",
+    "brightGreen": "#56d364",
+    "brightYellow": "#e3b341",
+    "brightBlue": "#79c0ff",
+    "brightMagenta": "#d2a8ff",
+    "brightCyan": "#56d4dd",
+    "brightWhite": "#ffffff"
+  },
+  "ui": {
+    "statusline": {
+      "background": "#161b22",
+      "foreground": "#8b949e",
+      "accent": "#f97316"
+    }
+  }
+}

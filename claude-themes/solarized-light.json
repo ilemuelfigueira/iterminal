@@ -1,0 +1,16 @@
+{
+  "name": "Solarized Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#268bd2",
+    "error": "#dc322f",
+    "success": "#859900",
+    "warning": "#b58900",
+    "diffAdded": "#859900",
+    "diffRemoved": "#dc322f",
+    "promptBorder": "#eee8d5",
+    "planMode": "#2aa198",
+    "text": "#657b83",
+    "inactive": "#93a1a1"
+  }
+}

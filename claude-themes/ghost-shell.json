@@ -1,0 +1,26 @@
+{
+  "name": "Ghost in the Shell",
+  "author": "tushar2704",
+  "colors": {
+    "background": "#00000000",
+    "foreground": "#cfd8dc",
+    "cursor": "#00bcd4",
+    "selection": "#00bcd433",
+    "black": "#263238",
+    "red": "#ff5252",
+    "green": "#00e676",
+    "yellow": "#ffd740",
+    "blue": "#40c4ff",
+    "magenta": "#e040fb",
+    "cyan": "#18ffff",
+    "white": "#eceff1",
+    "brightBlack": "#546e7a",
+    "brightRed": "#ff8a80",
+    "brightGreen": "#b9f6ca",
+    "brightYellow": "#ffe57f",
+    "brightBlue": "#80d8ff",
+    "brightMagenta": "#ea80fc",
+    "brightCyan": "#a7ffeb",
+    "brightWhite": "#ffffff"
+  }
+}

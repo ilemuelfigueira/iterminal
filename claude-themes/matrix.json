@@ -1,0 +1,513 @@
+{
+  "name": "Matrix",
+  "description": "Terminal-inspired Matrix aesthetic with neon green on black, monospace typography, scanlines, and digital glitch effects",
+  "version": "1.0.0",
+  "type": "dark",
+  "author": "tushar2704",
+  "license": "MIT",
+  "colors": {
+    "primary": "#00ff41",
+    "primaryLight": "#39ff14",
+    "primaryDark": "#00cc33",
+    "secondary": "#00ff41",
+    "background": "#0a0e27",
+    "surface": "#0f1419",
+    "surfaceLight": "#1a1f2e",
+    "surfaceDark": "#050812",
+    "text": "#00ff41",
+    "textSecondary": "#00cc33",
+    "textTertiary": "#008000",
+    "textInverse": "#000000",
+    "border": "#00ff41",
+    "borderLight": "#00cc33",
+    "borderDark": "#003d00",
+    "error": "#ff004d",
+    "errorLight": "#ff1744",
+    "errorDark": "#c40030",
+    "success": "#00ff41",
+    "successLight": "#39ff14",
+    "successDark": "#00cc33",
+    "warning": "#ffb700",
+    "warningLight": "#ffd60a",
+    "warningDark": "#cc9200",
+    "info": "#00d4ff",
+    "infoLight": "#00e5ff",
+    "infoDark": "#0099cc",
+    "disabled": "#1a3a1a",
+    "placeholder": "#004d00",
+    "overlay": "rgba(0, 0, 0, 0.8)",
+    "shadow": "rgba(0, 255, 65, 0.1)",
+    "cursor": "#00ff41",
+    "selection": "#00ff4133",
+    "black": "#000000",
+    "red": "#ff0055",
+    "redDark": "#cc0044",
+    "green": "#00ff41",
+    "greenDark": "#00cc33",
+    "yellow": "#ffff00",
+    "yellowDark": "#cccc00",
+    "blue": "#0099ff",
+    "blueDark": "#0077cc",
+    "magenta": "#ff00ff",
+    "magentaDark": "#cc00cc",
+    "cyan": "#00ffff",
+    "cyanDark": "#00cccc",
+    "white": "#ffffff",
+    "brightBlack": "#333333",
+    "brightRed": "#ff3366",
+    "brightGreen": "#00ff41",
+    "brightYellow": "#ffff00",
+    "brightBlue": "#00ccff",
+    "brightMagenta": "#ff00ff",
+    "brightCyan": "#00ffff",
+    "brightWhite": "#ffffff"
+  },
+  "typography": {
+    "fontFamily": {
+      "mono": "'Courier New', 'Courier', 'IBM Plex Mono', 'Roboto Mono', monospace",
+      "sans": "'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace"
+    },
+    "fontSize": {
+      "xs": "11px",
+      "sm": "12px",
+      "base": "13px",
+      "lg": "14px",
+      "xl": "16px",
+      "2xl": "18px",
+      "3xl": "24px",
+      "4xl": "32px"
+    },
+    "fontWeight": {
+      "light": 300,
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700,
+      "extrabold": 800
+    },
+    "lineHeight": {
+      "tight": 1.2,
+      "normal": 1.5,
+      "relaxed": 1.75,
+      "loose": 2
+    },
+    "letterSpacing": {
+      "tight": "-0.5px",
+      "normal": "0px",
+      "wide": "1px",
+      "wider": "2px"
+    }
+  },
+  "spacing": {
+    "0": "0px",
+    "1": "2px",
+    "2": "4px",
+    "3": "6px",
+    "4": "8px",
+    "6": "12px",
+    "8": "16px",
+    "12": "24px",
+    "16": "32px",
+    "20": "40px",
+    "24": "48px",
+    "32": "64px"
+  },
+  "borderRadius": {
+    "none": "0px",
+    "sm": "2px",
+    "base": "4px",
+    "md": "6px",
+    "lg": "8px",
+    "xl": "12px",
+    "2xl": "16px",
+    "full": "9999px"
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 2px rgba(0, 255, 65, 0.05)",
+    "base": "0 1px 3px rgba(0, 255, 65, 0.1), 0 1px 2px rgba(0, 255, 65, 0.06)",
+    "md": "0 4px 6px rgba(0, 255, 65, 0.1), 0 2px 4px rgba(0, 255, 65, 0.06)",
+    "lg": "0 10px 15px rgba(0, 255, 65, 0.1), 0 4px 6px rgba(0, 255, 65, 0.05)",
+    "xl": "0 20px 25px rgba(0, 255, 65, 0.1), 0 10px 10px rgba(0, 255, 65, 0.04)",
+    "2xl": "0 25px 50px rgba(0, 255, 65, 0.15)",
+    "glow": "0 0 10px rgba(0, 255, 65, 0.3), 0 0 20px rgba(0, 255, 65, 0.2), inset 0 0 10px rgba(0, 255, 65, 0.1)",
+    "glowStrong": "0 0 20px rgba(0, 255, 65, 0.5), 0 0 40px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.15)"
+  },
+  "effects": {
+    "scanlines": {
+      "enabled": true,
+      "pattern": "repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px)",
+      "opacity": 0.03,
+      "animation": "scanline-drift 8s linear infinite"
+    },
+    "crt": {
+      "enabled": true,
+      "curvature": "0%",
+      "vignette": "radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%)",
+      "chromatic": "0px"
+    },
+    "glow": {
+      "enabled": true,
+      "intensity": "medium",
+      "blur": "8px",
+      "spread": "2px",
+      "color": "#00ff41"
+    },
+    "terminal": {
+      "cursor": {
+        "style": "block",
+        "animation": "terminal-blink 1s step-end infinite",
+        "color": "#00ff41"
+      },
+      "textShadow": "0 0 4px rgba(0, 255, 65, 0.3)"
+    }
+  },
+  "components": {
+    "button": {
+      "base": {
+        "padding": "8px 12px",
+        "borderRadius": "4px",
+        "fontSize": "13px",
+        "fontWeight": 600,
+        "fontFamily": "mono",
+        "border": "1px solid #00ff41",
+        "cursor": "pointer",
+        "transition": "all 0.2s ease",
+        "textTransform": "uppercase",
+        "letterSpacing": "1px"
+      },
+      "variants": {
+        "primary": {
+          "background": "rgba(0, 255, 65, 0.1)",
+          "color": "#00ff41",
+          "borderColor": "#00ff41",
+          "boxShadow": "0 0 10px rgba(0, 255, 65, 0.2), inset 0 0 10px rgba(0, 255, 65, 0.05)"
+        },
+        "primaryHover": {
+          "background": "rgba(0, 255, 65, 0.2)",
+          "color": "#39ff14",
+          "borderColor": "#39ff14",
+          "boxShadow": "0 0 20px rgba(0, 255, 65, 0.4), inset 0 0 15px rgba(0, 255, 65, 0.1)"
+        },
+        "primaryActive": {
+          "background": "rgba(0, 255, 65, 0.3)",
+          "color": "#00ff41",
+          "borderColor": "#00ff41",
+          "boxShadow": "0 0 30px rgba(0, 255, 65, 0.5), inset 0 0 20px rgba(0, 255, 65, 0.15)"
+        },
+        "secondary": {
+          "background": "transparent",
+          "color": "#00cc33",
+          "borderColor": "#00cc33"
+        },
+        "ghost": {
+          "background": "transparent",
+          "color": "#00ff41",
+          "borderColor": "transparent"
+        },
+        "danger": {
+          "background": "rgba(255, 0, 77, 0.1)",
+          "color": "#ff004d",
+          "borderColor": "#ff004d",
+          "boxShadow": "0 0 10px rgba(255, 0, 77, 0.2)"
+        }
+      },
+      "disabled": {
+        "opacity": 0.5,
+        "cursor": "not-allowed",
+        "color": "#1a3a1a",
+        "borderColor": "#1a3a1a",
+        "background": "rgba(26, 58, 26, 0.1)"
+      }
+    },
+    "input": {
+      "base": {
+        "padding": "8px 12px",
+        "borderRadius": "4px",
+        "fontSize": "13px",
+        "fontFamily": "mono",
+        "backgroundColor": "#050812",
+        "color": "#00ff41",
+        "border": "1px solid #00cc33",
+        "transition": "all 0.2s ease",
+        "boxShadow": "inset 0 0 8px rgba(0, 0, 0, 0.5)"
+      },
+      "focus": {
+        "borderColor": "#00ff41",
+        "boxShadow": "0 0 15px rgba(0, 255, 65, 0.3), inset 0 0 10px rgba(0, 255, 65, 0.05)",
+        "outline": "none"
+      },
+      "placeholder": {
+        "color": "#004d00"
+      },
+      "disabled": {
+        "backgroundColor": "#1a1f2e",
+        "color": "#1a3a1a",
+        "borderColor": "#1a3a1a",
+        "cursor": "not-allowed",
+        "opacity": 0.6
+      }
+    },
+    "card": {
+      "base": {
+        "backgroundColor": "#0f1419",
+        "borderRadius": "4px",
+        "border": "1px solid rgba(0, 255, 65, 0.2)",
+        "padding": "16px",
+        "boxShadow": "0 0 15px rgba(0, 255, 65, 0.1), inset 0 0 15px rgba(0, 255, 65, 0.02)"
+      },
+      "hover": {
+        "borderColor": "rgba(0, 255, 65, 0.4)",
+        "boxShadow": "0 0 25px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 255, 65, 0.03)"
+      },
+      "elevated": {
+        "boxShadow": "0 0 30px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.05)"
+      }
+    },
+    "codeBlock": {
+      "background": "#050812",
+      "color": "#00ff41",
+      "borderRadius": "4px",
+      "border": "1px solid rgba(0, 255, 65, 0.15)",
+      "padding": "12px",
+      "fontFamily": "mono",
+      "fontSize": "12px",
+      "lineHeight": 1.6,
+      "boxShadow": "inset 0 0 10px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 255, 65, 0.1)",
+      "overflowX": "auto",
+      "textShadow": "0 0 2px rgba(0, 255, 65, 0.2)"
+    },
+    "badge": {
+      "base": {
+        "display": "inline-block",
+        "padding": "4px 8px",
+        "borderRadius": "2px",
+        "fontSize": "11px",
+        "fontWeight": 600,
+        "fontFamily": "mono",
+        "letterSpacing": "0.5px",
+        "textTransform": "uppercase"
+      },
+      "success": {
+        "backgroundColor": "rgba(0, 255, 65, 0.2)",
+        "color": "#00ff41",
+        "border": "1px solid #00ff41"
+      },
+      "error": {
+        "backgroundColor": "rgba(255, 0, 77, 0.2)",
+        "color": "#ff004d",
+        "border": "1px solid #ff004d"
+      },
+      "warning": {
+        "backgroundColor": "rgba(255, 183, 0, 0.2)",
+        "color": "#ffb700",
+        "border": "1px solid #ffb700"
+      },
+      "info": {
+        "backgroundColor": "rgba(0, 212, 255, 0.2)",
+        "color": "#00d4ff",
+        "border": "1px solid #00d4ff"
+      }
+    },
+    "dropdown": {
+      "background": "#0f1419",
+      "border": "1px solid #00cc33",
+      "borderRadius": "4px",
+      "boxShadow": "0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 65, 0.1)",
+      "item": {
+        "padding": "8px 12px",
+        "color": "#00ff41",
+        "hover": {
+          "backgroundColor": "rgba(0, 255, 65, 0.1)",
+          "color": "#39ff14"
+        }
+      }
+    },
+    "modal": {
+      "overlay": "rgba(0, 0, 0, 0.9)",
+      "background": "#0f1419",
+      "border": "2px solid #00ff41",
+      "borderRadius": "4px",
+      "boxShadow": "0 0 50px rgba(0, 255, 65, 0.3), 0 0 100px rgba(0, 255, 65, 0.1)"
+    },
+    "tooltip": {
+      "background": "rgba(0, 0, 0, 0.95)",
+      "color": "#00ff41",
+      "border": "1px solid #00cc33",
+      "borderRadius": "2px",
+      "padding": "6px 8px",
+      "fontSize": "12px",
+      "fontFamily": "mono",
+      "boxShadow": "0 0 15px rgba(0, 255, 65, 0.2)"
+    },
+    "divider": {
+      "color": "rgba(0, 255, 65, 0.1)",
+      "thickness": "1px"
+    }
+  },
+  "animations": {
+    "scanlineDrift": {
+      "name": "scanline-drift",
+      "keyframes": {
+        "0%": { "transform": "translateY(0)" },
+        "100%": { "transform": "translateY(10px)" }
+      },
+      "duration": "8s",
+      "timingFunction": "linear",
+      "iterationCount": "infinite"
+    },
+    "terminalBlink": {
+      "name": "terminal-blink",
+      "keyframes": {
+        "0%": { "opacity": 1 },
+        "49%": { "opacity": 1 },
+        "50%": { "opacity": 0 },
+        "100%": { "opacity": 0 }
+      },
+      "duration": "1s",
+      "timingFunction": "step-end",
+      "iterationCount": "infinite"
+    },
+    "glitch": {
+      "name": "glitch",
+      "keyframes": {
+        "0%": { "transform": "translate(0)" },
+        "20%": { "transform": "translate(-2px, 2px)" },
+        "40%": { "transform": "translate(-2px, -2px)" },
+        "60%": { "transform": "translate(2px, 2px)" },
+        "80%": { "transform": "translate(2px, -2px)" },
+        "100%": { "transform": "translate(0)" }
+      },
+      "duration": "0.4s",
+      "timingFunction": "ease-in-out",
+      "iterationCount": "1"
+    },
+    "glitchText": {
+      "name": "glitch-text",
+      "keyframes": {
+        "0%": {
+          "textShadow": "2px 0 #ff004d, -2px 0 #00d4ff"
+        },
+        "14%": {
+          "textShadow": "2px 0 #ff004d, -2px 0 #00d4ff"
+        },
+        "15%": {
+          "textShadow": "-2px 0 #ff004d, 2px 0 #00d4ff"
+        },
+        "49%": {
+          "textShadow": "-2px 0 #ff004d, 2px 0 #00d4ff"
+        },
+        "50%": {
+          "textShadow": "2px 0 #ff004d, -2px 0 #00d4ff"
+        },
+        "100%": {
+          "textShadow": "2px 0 #ff004d, -2px 0 #00d4ff"
+        }
+      },
+      "duration": "0.5s",
+      "timingFunction": "ease-in-out",
+      "iterationCount": "infinite"
+    },
+    "pulse": {
+      "name": "pulse-glow",
+      "keyframes": {
+        "0%": { "boxShadow": "0 0 10px rgba(0, 255, 65, 0.2)" },
+        "50%": { "boxShadow": "0 0 25px rgba(0, 255, 65, 0.4)" },
+        "100%": { "boxShadow": "0 0 10px rgba(0, 255, 65, 0.2)" }
+      },
+      "duration": "2s",
+      "timingFunction": "ease-in-out",
+      "iterationCount": "infinite"
+    },
+    "fadeIn": {
+      "name": "fade-in-glow",
+      "keyframes": {
+        "0%": { "opacity": 0, "textShadow": "0 0 0 rgba(0, 255, 65, 0)" },
+        "100%": { "opacity": 1, "textShadow": "0 0 4px rgba(0, 255, 65, 0.3)" }
+      },
+      "duration": "0.5s",
+      "timingFunction": "ease-in",
+      "iterationCount": "1"
+    },
+    "typewriter": {
+      "name": "typewriter",
+      "keyframes": {
+        "0%": { "width": "0", "borderRightColor": "#00ff41" },
+        "100%": { "width": "100%", "borderRightColor": "transparent" }
+      },
+      "duration": "0.5s",
+      "timingFunction": "steps(40, end)",
+      "iterationCount": "1"
+    }
+  },
+  "states": {
+    "hover": {
+      "filter": "brightness(1.2)",
+      "textShadow": "0 0 8px rgba(0, 255, 65, 0.4)"
+    },
+    "active": {
+      "filter": "brightness(1.4)",
+      "textShadow": "0 0 12px rgba(0, 255, 65, 0.6)"
+    },
+    "focus": {
+      "outline": "2px solid #00ff41",
+      "outlineOffset": "2px",
+      "boxShadow": "0 0 20px rgba(0, 255, 65, 0.3)"
+    },
+    "disabled": {
+      "opacity": 0.5,
+      "cursor": "not-allowed",
+      "filter": "grayscale(50%)"
+    }
+  },
+  "darkMode": {
+    "enabled": true,
+    "overrides": {}
+  },
+  "breakpoints": {
+    "xs": "320px",
+    "sm": "640px",
+    "md": "768px",
+    "lg": "1024px",
+    "xl": "1280px",
+    "2xl": "1536px"
+  },
+  "metadata": {
+    "lastUpdated": "2026-06-22",
+    "production": true,
+    "tags": ["matrix", "cyberpunk", "terminal", "hacker", "dark", "neon"],
+    "compatibility": {
+      "claudeCode": "1.0+",
+      "vscode": "1.60+",
+      "terminal": "ANSI 24-bit true color",
+      "os": ["macOS", "Linux", "Windows (WSL2)"]
+    }
+  },
+  "customization": {
+    "adjustGlow": "Modify effects.glow.blur and effects.glow.intensity for stronger/weaker glow",
+    "changeGreen": "Replace all #00ff41 with preferred green (e.g., #00dd33, #00ff00)",
+    "disableScanlines": "Set effects.scanlines.enabled to false",
+    "switchFonts": "Edit typography.fontFamily.mono to prioritize monospace font",
+    "tweakAnimationSpeed": "Modify animation duration values in animations section",
+    "reduceGlitch": "Lower glitch keyframe offsets for subtler effect"
+  },
+  "palette": {
+    "matrix_green_primary": "#00ff41",
+    "matrix_green_bright": "#39ff14",
+    "matrix_green_dark": "#00cc33",
+    "matrix_green_muted": "#008000",
+    "terminal_black": "#050812",
+    "terminal_black_darker": "#0a0e27",
+    "terminal_white": "#ffffff",
+    "accent_red": "#ff004d",
+    "accent_cyan": "#00d4ff",
+    "accent_yellow": "#ffb700"
+  },
+  "installation": {
+    "instructions": {
+      "step1": "mkdir -p ~/.claude/themes && cp matrix.json ~/.claude/themes/",
+      "step2": "Run /theme in Claude Code and select 'Matrix'",
+      "step3": "Theme activates immediately"
+    }
+  }
+}

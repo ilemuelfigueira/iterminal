@@ -1,0 +1,16 @@
+{
+  "name": "UitKit Brand",
+  "base": "dark",
+  "overrides": {
+    "claude": "#ff8c00",
+    "error": "#ff4444",
+    "success": "#00d084",
+    "warning": "#ffb347",
+    "diffAdded": "#00d084",
+    "diffRemoved": "#ff4444",
+    "promptBorder": "#1e1e2e",
+    "planMode": "#ff8c00",
+    "text": "#e8e8f0",
+    "inactive": "#4a4a6a"
+  }
+}

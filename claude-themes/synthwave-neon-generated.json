@@ -1,0 +1,209 @@
+{
+  "name": "Synthwave Neon",
+  "description": "80s synthwave inspired theme with magenta and cyan neon colors",
+  "version": "1.0.0",
+  "type": "dark",
+  "author": "theme-builder",
+  "license": "MIT",
+  "colors": {
+    "primary": "#ff00ff",
+    "primaryLight": "#ff33ff",
+    "primaryDark": "#cc00cc",
+    "secondary": "#00ffff",
+    "background": "#0d0221",
+    "surface": "#1a0a2e",
+    "text": "#ff00ff",
+    "textSecondary": "#00ffff",
+    "error": "#ff006e",
+    "success": "#00ff41",
+    "warning": "#ffd60a",
+    "info": "#00d4ff"
+  },
+  "typography": {
+    "fontFamily": {
+      "mono": "'Courier New', 'Courier', 'IBM Plex Mono', 'Roboto Mono', monospace",
+      "sans": "'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace"
+    },
+    "fontSize": {
+      "xs": "11px",
+      "sm": "12px",
+      "base": "13px",
+      "lg": "14px",
+      "xl": "16px",
+      "2xl": "18px",
+      "3xl": "24px",
+      "4xl": "32px"
+    },
+    "fontWeight": {
+      "light": 300,
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700,
+      "extrabold": 800
+    }
+  },
+  "spacing": {
+    "0": "0px",
+    "1": "2px",
+    "2": "4px",
+    "3": "6px",
+    "4": "8px",
+    "6": "12px",
+    "8": "16px",
+    "12": "24px",
+    "16": "32px",
+    "20": "40px",
+    "24": "48px",
+    "32": "64px"
+  },
+  "borderRadius": {
+    "none": "0px",
+    "sm": "2px",
+    "base": "4px",
+    "md": "6px",
+    "lg": "8px",
+    "xl": "12px",
+    "2xl": "16px",
+    "full": "9999px"
+  },
+  "shadows": {},
+  "effects": {
+    "scanlines": {
+      "enabled": true,
+      "opacity": 0.03
+    },
+    "glow": {
+      "enabled": true,
+      "intensity": "medium",
+      "blur": "8px"
+    },
+    "crt": {
+      "enabled": false
+    },
+    "terminal": {
+      "cursor": {
+        "style": "block",
+        "animation": "terminal-blink 1s step-end infinite",
+        "color": "#ff00ff"
+      },
+      "textShadow": "0 0 4px rgba(0, 255, 65, 0.3)"
+    }
+  },
+  "components": {
+    "button": {
+      "base": {
+        "padding": "8px 12px",
+        "borderRadius": "4px",
+        "fontSize": "13px",
+        "fontWeight": 600,
+        "border": "1px solid #ff00ff",
+        "cursor": "pointer",
+        "transition": "all 0.2s ease",
+        "textTransform": "uppercase"
+      },
+      "variants": {
+        "primary": {
+          "background": "rgba(0, 255, 65, 0.1)",
+          "color": "#ff00ff"
+        }
+      }
+    },
+    "input": {
+      "base": {
+        "padding": "8px 12px",
+        "fontSize": "13px",
+        "backgroundColor": "#0d0221",
+        "color": "#ff00ff",
+        "border": "1px solid #cc00cc"
+      }
+    },
+    "card": {
+      "base": {
+        "backgroundColor": "#1a0a2e",
+        "border": "1px solid rgba(0, 255, 65, 0.2)",
+        "padding": "16px"
+      }
+    }
+  },
+  "animations": {
+    "scanlineDrift": {
+      "name": "scanline-drift",
+      "keyframes": {
+        "0%": {
+          "transform": "translateY(0)"
+        },
+        "100%": {
+          "transform": "translateY(10px)"
+        }
+      },
+      "duration": "8s",
+      "timingFunction": "linear",
+      "iterationCount": "infinite"
+    },
+    "terminalBlink": {
+      "name": "terminal-blink",
+      "keyframes": {
+        "0%": {
+          "opacity": 1
+        },
+        "50%": {
+          "opacity": 0
+        },
+        "100%": {
+          "opacity": 0
+        }
+      },
+      "duration": "1s",
+      "timingFunction": "step-end",
+      "iterationCount": "infinite"
+    },
+    "pulse": {
+      "name": "pulse-glow",
+      "keyframes": {
+        "0%": {
+          "boxShadow": "0 0 10px rgba(0, 255, 65, 0.2)"
+        },
+        "50%": {
+          "boxShadow": "0 0 25px rgba(0, 255, 65, 0.4)"
+        },
+        "100%": {
+          "boxShadow": "0 0 10px rgba(0, 255, 65, 0.2)"
+        }
+      },
+      "duration": "2s",
+      "timingFunction": "ease-in-out",
+      "iterationCount": "infinite"
+    }
+  },
+  "states": {
+    "hover": {
+      "filter": "brightness(1.2)"
+    },
+    "active": {
+      "filter": "brightness(1.4)"
+    },
+    "focus": {
+      "outline": "2px solid #ff00ff",
+      "outlineOffset": "2px"
+    },
+    "disabled": {
+      "opacity": 0.5,
+      "cursor": "not-allowed"
+    }
+  },
+  "metadata": {
+    "lastUpdated": "2026-06-22",
+    "production": false,
+    "tags": [
+      "synthwave",
+      "cyberpunk",
+      "neon",
+      "custom"
+    ],
+    "compatibility": {
+      "claudeCode": "1.0+",
+      "terminal": "ANSI 24-bit true color"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Monokai",
+  "base": "dark",
+  "overrides": {
+    "claude": "#ae81ff",
+    "error": "#f92672",
+    "success": "#a6e22e",
+    "warning": "#e6db74",
+    "diffAdded": "#a6e22e",
+    "diffRemoved": "#f92672",
+    "promptBorder": "#3e3d32",
+    "planMode": "#66d9e8",
+    "text": "#f8f8f2",
+    "inactive": "#75715e"
+  }
+}
