@@ -1,0 +1,31 @@
+{
+  "name": "engenheiro",
+  "description": "Verbos técnicos diretos para o dev do dia a dia (PT-BR)",
+  "verbs": [
+    "Compilando",
+    "Rodando testes",
+    "Resolvendo deps",
+    "Lendo contexto",
+    "Validando schema",
+    "Formatando",
+    "Indexando arquivos",
+    "Analisando diff",
+    "Checando tipos",
+    "Buildando",
+    "Instalando pacotes",
+    "Linting",
+    "Parseando resposta",
+    "Carregando config",
+    "Verificando permissões",
+    "Calculando hash",
+    "Sincronizando arquivos",
+    "Executando query",
+    "Conectando ao servidor",
+    "Aguardando resposta",
+    "Processando resultado",
+    "Escrevendo no disco",
+    "Limpando cache",
+    "Reiniciando serviço",
+    "Deployando"
+  ]
+}
