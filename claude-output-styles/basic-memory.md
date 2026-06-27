@@ -1,4 +1,5 @@
 ---
+name: Basic Memory
 description: Work with Basic Memory as long-term memory — search before recalling, capture decisions as typed notes, cite permalinks
 keep-coding-instructions: true
 ---
