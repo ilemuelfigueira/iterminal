@@ -29,13 +29,18 @@ for file in "$REPO_DIR/claude-code-spinner-verbs/packs"/*.json; do
   fi
 
   missing_field=0
-  for field in name description verbs; do
-    if ! jq -e ".$field" "$file" > /dev/null 2>&1; then
-      echo "  FAIL: $pack_name — campo '$field' ausente"
+  for field in name description; do
+    if ! jq -e ".$field | (. != null and . != \"\")" "$file" > /dev/null 2>&1; then
+      echo "  FAIL: $pack_name — campo '$field' ausente ou vazio"
       ERRORS=$((ERRORS + 1))
       missing_field=1
     fi
   done
+  if ! jq -e '.verbs' "$file" > /dev/null 2>&1; then
+    echo "  FAIL: $pack_name — campo 'verbs' ausente"
+    ERRORS=$((ERRORS + 1))
+    missing_field=1
+  fi
   [[ "$missing_field" -eq 1 ]] && continue
 
   if ! jq -e '.verbs | length > 0' "$file" > /dev/null 2>&1; then
@@ -64,16 +69,19 @@ for file in "$REPO_DIR/claude-output-styles"/*.md; do
   [[ -f "$file" ]] || continue
   style_name="$(basename "$file")"
 
-  if ! grep -q '^name:' "$file"; then
-    echo "  FAIL: $style_name — frontmatter 'name' ausente"
+  frontmatter=$(awk '/^---$/{c++; next} c==1{print} c>=2{exit}' "$file")
+
+  name_value=$(echo "$frontmatter" | grep '^name:' | head -1 | sed 's/^name:[[:space:]]*//')
+  if [[ -z "$name_value" ]]; then
+    echo "  FAIL: $style_name — frontmatter 'name' ausente ou vazio"
     ERRORS=$((ERRORS + 1))
   fi
 
-  if ! grep -q '^description:' "$file"; then
-    echo "  FAIL: $style_name — frontmatter 'description' ausente"
+  desc=$(echo "$frontmatter" | grep '^description:' | head -1 | sed 's/^description:[[:space:]]*//')
+  if [[ -z "$desc" ]]; then
+    echo "  FAIL: $style_name — frontmatter 'description' ausente ou vazio"
     ERRORS=$((ERRORS + 1))
   else
-    desc=$(grep '^description:' "$file" | head -1 | sed 's/^description:[[:space:]]*//')
     desc_len=${#desc}
     if [[ "$desc_len" -gt 120 ]]; then
       echo "  FAIL: $style_name — description excede 120 chars ($desc_len)"
