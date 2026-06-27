@@ -25,3 +25,4 @@ fi
 
 bash "$SCRIPTS_DIR/sync-files.sh" "$SCOPE" "claude-themes"        "*.json" "themes"
 bash "$SCRIPTS_DIR/sync-files.sh" "$SCOPE" "claude-output-styles"  "*.md"   "output-styles"
+bash "$SCRIPTS_DIR/install-hooks.sh"
