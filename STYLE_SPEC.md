@@ -23,7 +23,7 @@ Regras verificáveis estão nas tabelas abaixo.
 
 | Campo | Regra |
 |---|---|
-| `name` | Obrigatório |
+| `name` | Obrigatório, string não vazia |
 | `description` | Obrigatório |
 | `verbs` | Array de strings, cada item não vazio e ≤ 4 palavras |
 | locale | Strings em PT-BR |
