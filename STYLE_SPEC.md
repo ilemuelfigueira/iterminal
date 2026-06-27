@@ -1,19 +1,12 @@
 # iterminal Style Specification
 
 Regras verificáveis para todos os assets de Claude Code neste repo.
+Body = conteúdo após o segundo `---` delimitador YAML no frontmatter.
 
 ## Tom
 
 Técnico direto. Sem prólogo, sem rodapé, sem sycophancy.
-Sem frases iniciando linha com: `Sure`, `Of course`, `Certainly`, `Absolutely`.
-
-## Comprimento
-
-Output styles: body (após o segundo `---`) ≤ 80 linhas.
-
-## Locale
-
-Spinner verbs em PT-BR. Máx 4 palavras por verb.
+Regras verificáveis estão nas tabelas abaixo.
 
 ## Regras por tipo de asset
 
@@ -21,8 +14,8 @@ Spinner verbs em PT-BR. Máx 4 palavras por verb.
 
 | Campo | Regra |
 |---|---|
-| `name` | Obrigatório no frontmatter |
-| `description` | Obrigatório no frontmatter, ≤ 120 chars |
+| `name` | Obrigatório, string não vazia |
+| `description` | Obrigatório, ≤ 120 chars |
 | body | ≤ 80 linhas |
 | sycophancy | Nenhuma linha começa com Sure / Of course / Certainly / Absolutely |
 
@@ -33,3 +26,4 @@ Spinner verbs em PT-BR. Máx 4 palavras por verb.
 | `name` | Obrigatório |
 | `description` | Obrigatório |
 | `verbs` | Array de strings, cada item não vazio e ≤ 4 palavras |
+| locale | Strings em PT-BR |
