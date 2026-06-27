@@ -28,12 +28,21 @@ for file in "$REPO_DIR/claude-code-spinner-verbs/packs"/*.json; do
     continue
   fi
 
+  missing_field=0
   for field in name description verbs; do
     if ! jq -e ".$field" "$file" > /dev/null 2>&1; then
       echo "  FAIL: $pack_name — campo '$field' ausente"
       ERRORS=$((ERRORS + 1))
+      missing_field=1
     fi
   done
+  [[ "$missing_field" -eq 1 ]] && continue
+
+  if ! jq -e '.verbs | length > 0' "$file" > /dev/null 2>&1; then
+    echo "  FAIL: $pack_name — verbs está vazio"
+    ERRORS=$((ERRORS + 1))
+    continue
+  fi
 
   while IFS= read -r verb; do
     if [[ -z "$verb" ]]; then
