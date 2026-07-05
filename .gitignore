@@ -1,3 +1,9 @@
 *.local
 *.bak
 .DS_Store
+
+.claude
+
+docs
+
+CLAUDE.md
