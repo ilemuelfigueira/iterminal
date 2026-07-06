@@ -1,0 +1,81 @@
+# enforce-gates.yml — Claude Code enforce-gate configuration
+#
+# Config resolution order (first found wins):
+#   1. $CLAUDE_ENFORCE_GATE_CONFIG   (env var pointing to any path)
+#   2. .claude/enforce-gates.yml     (project-local override)
+#   3. ~/.claude/enforce-gates.yml   (global default, installed by install.py)
+#
+# Gate behaviors:
+#   one-shot (default)  block -> pass -> block -> pass -> ... (alternates per file per session)
+#   time                block, pass until gate_time seconds elapse since last block, then repeat
+#
+# Matcher types:
+#   glob  (default)  fnmatch against basename when no slash present, full path otherwise
+#   regex            Python re.search against the full file path
+
+version: 1
+
+defaults:
+  behavior: one-shot
+  gate_time: 30
+  tools:
+    - Edit
+    - Write
+    - MultiEdit
+
+gates:
+  - id: styles
+    enabled: true
+    name: "Arquivo de Estilos Protegido"
+    matcher: "*.styles.ts"
+    matcher_type: glob
+    behavior: one-shot
+    message: |
+      ENFORCE GATE -- Arquivo de Estilos Protegido (*.styles.ts)
+
+      Edicao BLOQUEADA nesta tentativa. Antes de tentar novamente, voce DEVE
+      responder os 5 pontos abaixo no seu proximo turno:
+
+        1. FATOS    -> Quais fatos concretos justificam editar este arquivo agora?
+        2. MOTIVO   -> Qual e o motivo especifico e preciso da modificacao?
+        3. REGRAS   -> Esta edicao quebra alguma Claude rule?
+                      Liste explicitamente cada rule afetada.
+        4. CERTEZA  -> Voce tem certeza absoluta que este arquivo precisa ser alterado?
+        5. TOKEN    -> [ATENCAO] Estilos inline NAO sao permitidos.
+                       Qual token do design system sera utilizado?
+                       (ex: colors.primary.500, spacing.md, typography.heading.lg)
+
+      Na proxima tentativa este gate sera liberado para esta sessao.
+      Ignorar estas perguntas e uma violacao de Claude rules.
+
+  - id: ui-components
+    enabled: true
+    name: "Componente UI Protegido"
+    matcher: "(components|ui)/[^/]+\\.tsx$"
+    matcher_type: regex
+    behavior: one-shot
+    message: |
+      ENFORCE GATE -- Componente UI Protegido (components|ui/*.tsx)
+
+      Edicao BLOQUEADA nesta tentativa. Antes de tentar novamente, voce DEVE:
+
+        a) MOTIVO     -> Qual e o motivo da modificacao neste componente?
+                         (responda diretamente no proximo turno)
+
+        b) IMPACTO    -> Quais outros arquivos/componentes serao impactados?
+                         (liste cada caminho explicitamente)
+
+        c) REGRAS     -> Esta alteracao quebra alguma Claude rule?
+                         [ATENCAO] Se SIM -> use AskUserQuestion AGORA para obter
+                         consentimento explicito antes de prosseguir.
+                         NAO edite sem resposta afirmativa do usuario.
+
+        d) DESIGN     -> Esta modificacao esta prevista no design system?
+                         [SIM]  -> informe o token do design system a usar.
+                                   (ex: Button.variant.primary, Card.shadow.md)
+                         [NAO]  -> trate como quebra de regra (ver item c):
+                                   use AskUserQuestion antes de continuar.
+
+      Responda a) e b) no proximo turno.
+      Para c) e d), acione AskUserQuestion conforme indicado acima.
+      Na proxima tentativa este gate sera liberado para esta sessao.

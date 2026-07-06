@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
 """
-install.py — installs enforce-gate PreToolUse hook into Claude Code settings
+install.py — installs the enforce-gate YAML-driven hook into Claude Code
+
+Steps:
+  1. Ensure pyyaml is installed  (pip3 install pyyaml)
+  2. Copy enforce-gate.py   →  ~/.claude/hooks/enforce-gate.py
+  3. Copy enforce-gates.yml →  ~/.claude/enforce-gates.yml  (skip if already present)
+  4. Register PreToolUse entry in the target settings.json (idempotent)
 
 Usage:
   python3 install.py [--scope global|local|repo]
 
 Scopes:
   global  → ~/.claude/settings.json    (all Claude Code sessions)
-  local   → .claude/settings.json      (current repo only)  ← DEFAULT
+  local   → .claude/settings.json      (current repo only)  <- DEFAULT
   repo    → .claude/settings.json      (alias for local)
 """
 
 import argparse
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -27,7 +34,7 @@ def _scope_to_settings_path(scope: str) -> Path:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Install enforce-gate PreToolUse hook into Claude Code settings"
+        description="Install enforce-gate YAML-driven hook into Claude Code"
     )
     parser.add_argument(
         "--scope",
@@ -36,6 +43,36 @@ def _parse_args() -> argparse.Namespace:
         help="Where to register the hook (default: local)",
     )
     return parser.parse_args()
+
+
+def _ensure_pyyaml() -> None:
+    try:
+        import yaml  # noqa: F401
+        print("✅ pyyaml ja instalado")
+        return
+    except ImportError:
+        pass
+
+    print("📦 Instalando pyyaml...")
+
+    pip_base = [sys.executable, "-m", "pip", "install", "pyyaml", "--quiet"]
+    # Try --user first (safe for most envs); fall back to --break-system-packages
+    # for macOS externally-managed Python (PEP 668).
+    candidate_flags = [["--user"], ["--user", "--break-system-packages"]]
+
+    for extra_flags in candidate_flags:
+        result = subprocess.run(
+            pip_base + extra_flags,
+            capture_output=True,
+            text=True,
+        )
+        is_success = result.returncode == 0
+        if is_success:
+            print("✅ pyyaml instalado com sucesso")
+            return
+
+    print(f"❌ Falha ao instalar pyyaml. Instale manualmente: pip3 install pyyaml --user")
+    sys.exit(1)
 
 
 def _check_already_registered(pre_tool_use_list: list) -> bool:
@@ -59,26 +96,44 @@ def main() -> None:
 
     script_dir = Path(__file__).parent.resolve()
     hook_source = script_dir / "enforce-gate.py"
+    gates_source = script_dir / "enforce-gates.yml"
     hooks_dest_dir = Path.home() / ".claude" / "hooks"
     hook_dest = hooks_dest_dir / "enforce-gate.py"
+    gates_global_dest = Path.home() / ".claude" / "enforce-gates.yml"
     settings_file = _scope_to_settings_path(scope)
 
     print("🔧 Instalando enforce-gate hook...")
     print(f"   Scope    : {scope}")
     print(f"   Settings : {settings_file}")
     print(f"   Hook     : {hook_dest}")
+    print(f"   Config   : {gates_global_dest}")
     print()
 
-    hook_source_missing = not hook_source.exists()
-    if hook_source_missing:
-        print(f"❌ enforce-gate.py não encontrado em: {hook_source}")
-        sys.exit(1)
+    # ── 1. pyyaml ────────────────────────────────────────────────────────────
+    _ensure_pyyaml()
 
+    # ── 2. Validate sources ───────────────────────────────────────────────────
+    for required_source in (hook_source, gates_source):
+        is_missing = not required_source.exists()
+        if is_missing:
+            print(f"❌ Arquivo nao encontrado: {required_source}")
+            sys.exit(1)
+
+    # ── 3. Copy hook script ───────────────────────────────────────────────────
     hooks_dest_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(hook_source, hook_dest)
     hook_dest.chmod(0o755)
-    print(f"✅ Hook script instalado: {hook_dest}")
+    print(f"✅ Hook engine instalado: {hook_dest}")
 
+    # ── 4. Copy YAML config (preserve existing customizations) ───────────────
+    gates_config_exists = gates_global_dest.exists()
+    if gates_config_exists:
+        print(f"⚠️  Config ja existe, mantendo: {gates_global_dest}")
+    else:
+        shutil.copy2(gates_source, gates_global_dest)
+        print(f"✅ Config instalada: {gates_global_dest}")
+
+    # ── 5. Ensure settings file exists ───────────────────────────────────────
     is_local_scope = scope != "global"
     if is_local_scope:
         settings_file.parent.mkdir(parents=True, exist_ok=True)
@@ -93,12 +148,13 @@ def main() -> None:
     except json.JSONDecodeError:
         settings = {}
 
+    # ── 6. Register PreToolUse hook ───────────────────────────────────────────
     hooks_section = settings.setdefault("hooks", {})
     pre_tool_use_list = hooks_section.setdefault("PreToolUse", [])
 
     is_already_registered = _check_already_registered(pre_tool_use_list)
     if is_already_registered:
-        print("⚠️  enforce-gate já registrado em PreToolUse — sem alterações.")
+        print("⚠️  enforce-gate ja registrado em PreToolUse — sem alteracoes.")
     else:
         hook_entry = _build_hook_entry(hook_dest)
         pre_tool_use_list.insert(0, hook_entry)
@@ -107,17 +163,13 @@ def main() -> None:
         print(f"✅ PreToolUse hook registrado em: {settings_file}")
 
     print()
-    print("🎉 enforce-gate instalado com sucesso!")
+    print("Instalacao concluida!")
     print()
-    print("Gates ativos:")
-    print("  • *.styles.ts          → Checklist de 5 pontos (design token obrigatório)")
-    print("  • components|ui/*.tsx  → Interrogação estruturada + AskUserQuestion gate")
+    print("Gates carregados de:")
+    print(f"  ~/.claude/enforce-gates.yml  (global)")
+    print(f"  .claude/enforce-gates.yml    (project-local, se existir)")
     print()
-    print("Variáveis de ambiente:")
-    print("  CLAUDE_ENFORCE_GATE_BEHAVIOR=one-shot  (padrão) — alterna bloquear/liberar a cada tentativa")
-    print("  CLAUDE_ENFORCE_GATE_BEHAVIOR=time      — libera após GATE_TIME segundos")
-    print("  CLAUDE_ENFORCE_GATE_TIME=30            — segundos para modo time (padrão: 30)")
-    print()
+    print("Para adicionar gates: edite enforce-gates.yml e adicione entradas em 'gates:'")
     print(f"Para desinstalar: remova a entrada 'enforce-gate' de PreToolUse em {settings_file}")
 
 

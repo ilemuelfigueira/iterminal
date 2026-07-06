@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-enforce-gate.py — PreToolUse hook: file-edit gates
+enforce-gate.py ��� YAML-driven PreToolUse hook engine
 
-Gate 1: *.styles.ts          → design-system checklist (5 points)
-Gate 2: components|ui/*.tsx  → structured interrogation + AskUserQuestion gate
+Loads gate definitions from enforce-gates.yml and applies them to every
+file-editing tool call made by Claude Code.
 
-Environment variables:
-  CLAUDE_ENFORCE_GATE_BEHAVIOR  one-shot (default) | time
-  CLAUDE_ENFORCE_GATE_TIME      seconds until gate resets in time mode (default: 30)
+Config resolution order (first found wins):
+  1. $CLAUDE_ENFORCE_GATE_CONFIG   (env var)
+  2. .claude/enforce-gates.yml     (project-local)
+  3. ~/.claude/enforce-gates.yml   (global)
 
-Behaviors:
-  one-shot  block → pass → block → pass → ... (alternates per file per session)
-  time      block, pass until GATE_TIME seconds elapse since last block, then block again
+See enforce-gates.yml for the full schema reference.
 """
 
 import fcntl
+import fnmatch
 import hashlib
 import json
 import os
@@ -25,59 +25,73 @@ import time
 import uuid
 from pathlib import Path
 
-GATE1_MSG = """\
-╔══════════════════════════════════════════════════════════════════════╗
-║  🚫  ENFORCE GATE — Arquivo de Estilos Protegido (*.styles.ts)      ║
-╚══════════════════════════════════════════════════════════════════════╝
+try:
+    import yaml
+except ImportError:
+    print(
+        "[enforce-gate] pyyaml nao encontrado. "
+        "Execute: pip3 install pyyaml\n"
+        "O gate foi desativado ate a instalacao.",
+        file=sys.stderr,
+    )
+    sys.exit(0)
 
-Edição BLOQUEADA nesta tentativa. Antes de tentar novamente, você DEVE
-responder os 5 pontos abaixo no seu próximo turno:
 
-  1. FATOS    → Quais fatos concretos justificam editar este arquivo agora?
-  2. MOTIVO   → Qual é o motivo específico e preciso da modificação?
-  3. REGRAS   → Esta edição quebra alguma Claude rule?
-                Liste explicitamente cada rule afetada.
-  4. CERTEZA  → Você tem certeza absoluta que este arquivo precisa ser alterado?
-  5. TOKEN    → ⚠️  Estilos inline NÃO são permitidos.
-                 Qual token do design system será utilizado?
-                 (ex: colors.primary.500, spacing.md, typography.heading.lg)
-
-Na próxima tentativa este gate será liberado para esta sessão.
-Ignorar estas perguntas é uma violação de Claude rules."""
-
-GATE2_MSG = """\
-╔══════════════════════════════════════════════════════════════════════╗
-║  🔍  ENFORCE GATE — Componente UI Protegido (components|ui/*.tsx)   ║
-╚══════════════════════════════════════════════════════════════════════╝
-
-Edição BLOQUEADA nesta tentativa. Antes de tentar novamente, você DEVE:
-
-  a) MOTIVO     → Qual é o motivo da modificação neste componente?
-                  (responda diretamente no próximo turno)
-
-  b) IMPACTO    → Quais outros arquivos/componentes serão impactados?
-                  (liste cada caminho explicitamente)
-
-  c) REGRAS     → Esta alteração quebra alguma Claude rule?
-                  ⚠️  Se SIM → use AskUserQuestion AGORA para obter
-                      consentimento explícito antes de prosseguir.
-                      NÃO edite sem resposta afirmativa do usuário.
-
-  d) DESIGN     → Esta modificação está prevista no design system?
-                  ✅ Se SIM  → informe o token do design system a usar.
-                               (ex: Button.variant.primary, Card.shadow.md)
-                  ❌ Se NÃO → trate como quebra de regra (→ item c):
-                               use AskUserQuestion antes de continuar.
-
-Responda a) e b) no próximo turno.
-Para c) e d), acione AskUserQuestion conforme indicado acima.
-Na próxima tentativa este gate será liberado para esta sessão."""
-
-EDIT_TOOLS = frozenset({"Edit", "Write", "MultiEdit"})
-VALID_BEHAVIORS = frozenset({"one-shot", "time"})
-DEFAULT_GATE_TIME_SECONDS = 30
 DEFAULT_BEHAVIOR = "one-shot"
+DEFAULT_GATE_TIME = 30
+DEFAULT_TOOLS = frozenset({"Edit", "Write", "MultiEdit"})
+VALID_BEHAVIORS = frozenset({"one-shot", "time"})
 
+
+# ── Config resolution ─────────────────────────────────────────────────────────
+
+def _find_config() -> Path | None:
+    env_path = os.environ.get("CLAUDE_ENFORCE_GATE_CONFIG", "")
+    has_env_path = bool(env_path)
+    if has_env_path:
+        candidate = Path(env_path)
+        is_env_path_valid = candidate.exists()
+        if is_env_path_valid:
+            return candidate
+
+    project_local = Path(".claude") / "enforce-gates.yml"
+    is_project_local_present = project_local.exists()
+    if is_project_local_present:
+        return project_local
+
+    global_config = Path.home() / ".claude" / "enforce-gates.yml"
+    is_global_present = global_config.exists()
+    if is_global_present:
+        return global_config
+
+    return None
+
+
+def _load_config(config_path: Path) -> dict:
+    with open(config_path) as config_file:
+        return yaml.safe_load(config_file) or {}
+
+
+# ── Gate matching ─────────────────────────────────────────────────────────────
+
+def _matches_glob(pattern: str, file_path: str) -> bool:
+    has_path_separator = "/" in pattern
+    if has_path_separator:
+        return fnmatch.fnmatch(file_path, pattern)
+    return fnmatch.fnmatch(os.path.basename(file_path), pattern)
+
+
+def _matches_gate(gate: dict, file_path: str) -> bool:
+    matcher = gate.get("matcher", "")
+    matcher_type = gate.get("matcher_type", "glob").lower()
+
+    is_regex = matcher_type == "regex"
+    if is_regex:
+        return bool(re.search(matcher, file_path))
+    return _matches_glob(matcher, file_path)
+
+
+# ── Session + state ───────────────────────────────────────────────────────────
 
 def _resolve_session_key() -> str:
     session_id = os.environ.get("CLAUDE_SESSION_ID", "")
@@ -116,6 +130,23 @@ def _file_key(file_path: str) -> str:
     return hashlib.md5(file_path.encode()).hexdigest()[:16]
 
 
+# ── Gate evaluation ───────────────────────────────────────────────────────────
+
+def _resolve_behavior(gate: dict, defaults: dict) -> str:
+    raw = gate.get("behavior", defaults.get("behavior", DEFAULT_BEHAVIOR))
+    normalized = str(raw).lower().strip()
+    is_known = normalized in VALID_BEHAVIORS
+    return normalized if is_known else DEFAULT_BEHAVIOR
+
+
+def _resolve_gate_time(gate: dict, defaults: dict) -> int:
+    raw = gate.get("gate_time", defaults.get("gate_time", DEFAULT_GATE_TIME))
+    try:
+        return int(raw)
+    except (ValueError, TypeError):
+        return DEFAULT_GATE_TIME
+
+
 def _compute_block_decision(state: dict, behavior: str, gate_time: int) -> bool:
     is_time_mode = behavior == "time"
     if is_time_mode:
@@ -141,8 +172,8 @@ def _build_updated_state(state: dict, behavior: str, did_block: bool) -> dict:
 def _evaluate_and_update(state_path: Path, behavior: str, gate_time: int) -> bool:
     """
     Atomically read state, decide whether to block, persist updated state.
-    Returns True when the gate should block this attempt.
     Uses fcntl.flock for atomic read-modify-write on Unix/macOS.
+    Returns True when this attempt should be blocked.
     """
     state_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -151,9 +182,9 @@ def _evaluate_and_update(state_path: Path, behavior: str, gate_time: int) -> boo
         state_file.seek(0)
         raw_content = state_file.read().strip()
 
-        is_state_empty = not raw_content
+        is_empty = not raw_content
         default_state = {"attempts": 0, "last_blocked_at": 0.0}
-        state = default_state if is_state_empty else json.loads(raw_content)
+        state = default_state if is_empty else json.loads(raw_content)
 
         do_block = _compute_block_decision(state, behavior, gate_time)
         new_state = _build_updated_state(state, behavior, do_block)
@@ -165,14 +196,23 @@ def _evaluate_and_update(state_path: Path, behavior: str, gate_time: int) -> boo
     return do_block
 
 
-def _run_gate(gate_prefix: str, message: str, behavior: str, gate_time: int) -> None:
-    state_path = _state_dir() / f"{gate_prefix}.json"
+def _apply_gate(gate: dict, defaults: dict, file_path: str) -> None:
+    gate_id = gate.get("id", "unknown")
+    behavior = _resolve_behavior(gate, defaults)
+    gate_time = _resolve_gate_time(gate, defaults)
+    message = gate.get("message", f"[enforce-gate] Gate '{gate_id}' bloqueou este arquivo.")
+
+    file_hash = _file_key(file_path)
+    state_path = _state_dir() / f"{gate_id}_{file_hash}.json"
+
     is_blocked = _evaluate_and_update(state_path, behavior, gate_time)
     if is_blocked:
-        print(message)
+        print(message.rstrip())
         sys.exit(1)
     sys.exit(0)
 
+
+# ── Entry point ───────────────────────────────────────────────────────────────
 
 def main() -> None:
     try:
@@ -181,37 +221,39 @@ def main() -> None:
         sys.exit(0)
 
     tool_name = payload.get("tool_name", "")
-    is_edit_tool = tool_name in EDIT_TOOLS
-    if not is_edit_tool:
-        sys.exit(0)
-
     tool_input = payload.get("tool_input", {})
     file_path = tool_input.get("file_path") or tool_input.get("path") or ""
+
     has_file_path = bool(file_path)
     if not has_file_path:
         sys.exit(0)
 
-    raw_behavior = os.environ.get("CLAUDE_ENFORCE_GATE_BEHAVIOR", DEFAULT_BEHAVIOR).lower().strip()
-    is_known_behavior = raw_behavior in VALID_BEHAVIORS
-    behavior = raw_behavior if is_known_behavior else DEFAULT_BEHAVIOR
+    config_path = _find_config()
+    has_config = config_path is not None
+    if not has_config:
+        sys.exit(0)
 
-    gate_time = DEFAULT_GATE_TIME_SECONDS
-    is_time_mode = behavior == "time"
-    if is_time_mode:
-        try:
-            gate_time = int(os.environ.get("CLAUDE_ENFORCE_GATE_TIME", str(DEFAULT_GATE_TIME_SECONDS)))
-        except ValueError:
-            gate_time = DEFAULT_GATE_TIME_SECONDS
+    config = _load_config(config_path)
+    defaults = config.get("defaults", {})
 
-    file_hash = _file_key(file_path)
+    default_tools = defaults.get("tools", list(DEFAULT_TOOLS))
+    is_intercepted_tool = tool_name in default_tools
+    if not is_intercepted_tool:
+        sys.exit(0)
 
-    is_styles_file = bool(re.search(r"\.styles\.ts$", file_path))
-    if is_styles_file:
-        _run_gate(f"styles_{file_hash}", GATE1_MSG, behavior, gate_time)
+    for gate in config.get("gates", []):
+        is_enabled = gate.get("enabled", True)
+        if not is_enabled:
+            continue
 
-    is_ui_component = bool(re.search(r"(components|ui)/[^/]+\.tsx$", file_path))
-    if is_ui_component:
-        _run_gate(f"ui_{file_hash}", GATE2_MSG, behavior, gate_time)
+        gate_tools = gate.get("tools", default_tools)
+        is_tool_in_gate_scope = tool_name in gate_tools
+        if not is_tool_in_gate_scope:
+            continue
+
+        is_match = _matches_gate(gate, file_path)
+        if is_match:
+            _apply_gate(gate, defaults, file_path)
 
 
 if __name__ == "__main__":
