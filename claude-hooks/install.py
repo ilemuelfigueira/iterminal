@@ -107,10 +107,17 @@ def _check_already_registered(hook_type_list: list) -> bool:
     )
 
 
-def _build_hook_entry(hook_dest: Path) -> dict:
+TOOL_BASED_HOOK_TYPES = frozenset({"PreToolUse", "PostToolUse"})
+
+
+def _build_hook_entry(hook_dest: Path, hook_type: str) -> dict:
     hook_command = f"python3 {hook_dest}"
     hook_definition = {"type": "command", "command": hook_command}
-    hook_entry = {"matcher": "", "hooks": [hook_definition]}
+    is_tool_based = hook_type in TOOL_BASED_HOOK_TYPES
+    if is_tool_based:
+        hook_entry = {"matcher": "*", "hooks": [hook_definition]}
+    else:
+        hook_entry = {"hooks": [hook_definition]}
     return hook_entry
 
 
@@ -187,7 +194,7 @@ def main() -> None:
         if is_already_registered:
             skipped_in.append(hook_type)
         else:
-            hook_entry = _build_hook_entry(hook_dest)
+            hook_entry = _build_hook_entry(hook_dest, hook_type)
             hook_type_list.insert(0, hook_entry)
             registered_in.append(hook_type)
 
