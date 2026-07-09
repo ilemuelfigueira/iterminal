@@ -1,23 +1,45 @@
 # enforce-gates.yml — Claude Code enforce-gate configuration
 #
-# Config resolution order (first found wins):
-#   1. $CLAUDE_ENFORCE_GATE_CONFIG   (env var pointing to any path)
-#   2. .claude/enforce-gates.yml     (project-local override)
-#   3. ~/.claude/enforce-gates.yml   (global default, installed by install.py)
+# Config resolution — TODOS os arquivos encontrados são merged (não "primeiro vence"):
+#   1. ~/.claude/enforce-gates.yml     (global/user, mais fraco)
+#   2. .claude/enforce-gates.yml       (project-local, overlay)
+#   3. $CLAUDE_ENFORCE_GATE_CONFIG     (override explícito, mais forte)
+#
+# Merge:
+#   defaults  → shallow merge; fonte mais forte vence por chave
+#   gates     → concatenados; gates com mesmo id: fonte mais forte substitui
+#
+# Hook types suportados (campo hook_types por gate):
+#   PreToolUse       → antes de uma chamada de ferramenta (pode bloquear com exit 2)
+#   PostToolUse      → após execução de ferramenta (informacional)
+#   UserPromptSubmit → quando o usuário submete um prompt (pode bloquear com exit 2)
+#   Stop             → quando Claude para (informacional)
+#   Notification     → eventos de notificação (informacional)
 #
 # Gate behaviors:
-#   one-shot (default)  block -> pass -> block -> pass -> ... (alternates per file per session)
-#   time                block, pass until gate_time seconds elapse since last block, then repeat
+#   one-shot (default)  block -> pass -> block -> pass -> ... (alterna por valor por sessão)
+#   time                block, passa até gate_time segundos desde o último block, então repete
 #
-# Matcher types:
-#   glob  (default)  fnmatch against basename when no slash present, full path otherwise
-#   regex            Python re.search against the full file path
+# Matcher types (para PreToolUse/PostToolUse, campo matcher / matcher_type):
+#   glob  (default)  fnmatch contra basename quando sem barra, caminho completo caso contrário
+#   regex            Python re.search contra o caminho completo
+#
+# Trigger (para outros hook types, ou override em qualquer tipo):
+#   trigger:
+#     field: <campo do payload a inspecionar>   (ex: prompt, stop_reason, notification_type)
+#     pattern: <padrão a aplicar>
+#     matcher_type: glob | regex
+#
+# block_exit_code:
+#   2 (default)  hard-block — Claude Code não executa a ação
+#   1            soft error — registrado mas pode não bloquear dependendo do hook type
 
 version: 1
 
 defaults:
   behavior: one-shot
   gate_time: 30
+  block_exit_code: 2
   tools:
     - Edit
     - Write
@@ -25,11 +47,14 @@ defaults:
 
 gates:
   - id: styles
+    hook_types:
+      - PreToolUse
     enabled: true
     name: "Arquivo de Estilos Protegido"
     matcher: "*.styles.ts"
     matcher_type: glob
     behavior: one-shot
+    block_exit_code: 2
     message: |
       ENFORCE GATE -- Arquivo de Estilos Protegido (*.styles.ts)
 
@@ -49,11 +74,14 @@ gates:
       Ignorar estas perguntas e uma violacao de Claude rules.
 
   - id: ui-components
+    hook_types:
+      - PreToolUse
     enabled: true
     name: "Componente UI Protegido"
     matcher: "(components|ui)/[^/]+\\.tsx$"
     matcher_type: regex
     behavior: one-shot
+    block_exit_code: 2
     message: |
       ENFORCE GATE -- Componente UI Protegido (components|ui/*.tsx)
 
@@ -79,3 +107,35 @@ gates:
       Responda a) e b) no proximo turno.
       Para c) e d), acione AskUserQuestion conforme indicado acima.
       Na proxima tentativa este gate sera liberado para esta sessao.
+
+# ── Exemplos de gates para outros hook types ──────────────────────────────────
+# Descomente e adapte conforme necessário:
+
+# - id: prompt-destructivo
+#   hook_types:
+#     - UserPromptSubmit
+#   enabled: false
+#   name: "Prompt Destrutivo"
+#   trigger:
+#     field: prompt
+#     pattern: "(delete all|rm -rf|drop table)"
+#     matcher_type: regex
+#   behavior: one-shot
+#   block_exit_code: 2
+#   message: |
+#     ENFORCE GATE -- Prompt Potencialmente Destrutivo
+#
+#     Este prompt foi bloqueado para revisao. Confirme a intencao antes de continuar.
+
+# - id: post-tool-log
+#   hook_types:
+#     - PostToolUse
+#   enabled: false
+#   name: "Log de Edicoes em Arquivos Criticos"
+#   matcher: "src/core/**"
+#   matcher_type: glob
+#   behavior: time
+#   gate_time: 0
+#   block_exit_code: 1
+#   message: |
+#     [enforce-gate] Arquivo em src/core/ foi modificado — revise o impacto.

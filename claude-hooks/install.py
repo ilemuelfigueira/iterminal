@@ -6,7 +6,8 @@ Steps:
   1. Ensure pyyaml is installed  (pip3 install pyyaml)
   2. Copy enforce-gate.py   →  ~/.claude/hooks/enforce-gate.py
   3. Copy enforce-gates.yml →  ~/.claude/enforce-gates.yml  (skip if already present)
-  4. Register PreToolUse entry in the target settings.json (idempotent)
+  4. Detect all hook types used across enabled gates in enforce-gates.yml
+  5. Register enforce-gate in each detected hook type in settings.json (idempotent)
 
 Usage:
   python3 install.py [--scope global|local|repo]
@@ -23,6 +24,8 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+DEFAULT_HOOK_TYPES = ["PreToolUse"]
 
 
 def _scope_to_settings_path(scope: str) -> Path:
@@ -56,8 +59,6 @@ def _ensure_pyyaml() -> None:
     print("📦 Instalando pyyaml...")
 
     pip_base = [sys.executable, "-m", "pip", "install", "pyyaml", "--quiet"]
-    # Try --user first (safe for most envs); fall back to --break-system-packages
-    # for macOS externally-managed Python (PEP 668).
     candidate_flags = [["--user"], ["--user", "--break-system-packages"]]
 
     for extra_flags in candidate_flags:
@@ -71,14 +72,37 @@ def _ensure_pyyaml() -> None:
             print("✅ pyyaml instalado com sucesso")
             return
 
-    print(f"❌ Falha ao instalar pyyaml. Instale manualmente: pip3 install pyyaml --user")
+    print("❌ Falha ao instalar pyyaml. Instale manualmente: pip3 install pyyaml --user")
     sys.exit(1)
 
 
-def _check_already_registered(pre_tool_use_list: list) -> bool:
+def _collect_used_hook_types(gates_source: Path) -> list:
+    try:
+        import yaml
+        with open(gates_source) as gates_file:
+            config = yaml.safe_load(gates_file) or {}
+    except Exception:
+        return list(DEFAULT_HOOK_TYPES)
+
+    used_hook_types: set = set()
+    for gate in config.get("gates", []):
+        is_enabled = gate.get("enabled", True)
+        if not is_enabled:
+            continue
+        gate_hook_types = gate.get("hook_types", DEFAULT_HOOK_TYPES)
+        used_hook_types.update(gate_hook_types)
+
+    has_used_types = bool(used_hook_types)
+    if not has_used_types:
+        return list(DEFAULT_HOOK_TYPES)
+
+    return sorted(used_hook_types)
+
+
+def _check_already_registered(hook_type_list: list) -> bool:
     return any(
         "enforce-gate" in hook.get("command", "")
-        for entry in pre_tool_use_list
+        for entry in hook_type_list
         for hook in entry.get("hooks", [])
     )
 
@@ -133,7 +157,11 @@ def main() -> None:
         shutil.copy2(gates_source, gates_global_dest)
         print(f"✅ Config instalada: {gates_global_dest}")
 
-    # ── 5. Ensure settings file exists ───────────────────────────────────────
+    # ── 5. Detect hook types used by enabled gates ────────────────────────────
+    used_hook_types = _collect_used_hook_types(gates_source)
+    print(f"🔍 Hook types detectados nos gates: {', '.join(used_hook_types)}")
+
+    # ── 6. Ensure settings file exists ───────────────────────────────────────
     is_local_scope = scope != "global"
     if is_local_scope:
         settings_file.parent.mkdir(parents=True, exist_ok=True)
@@ -148,29 +176,41 @@ def main() -> None:
     except json.JSONDecodeError:
         settings = {}
 
-    # ── 6. Register PreToolUse hook ───────────────────────────────────────────
+    # ── 7. Register enforce-gate in each used hook type ───────────────────────
     hooks_section = settings.setdefault("hooks", {})
-    pre_tool_use_list = hooks_section.setdefault("PreToolUse", [])
+    registered_in = []
+    skipped_in = []
 
-    is_already_registered = _check_already_registered(pre_tool_use_list)
-    if is_already_registered:
-        print("⚠️  enforce-gate ja registrado em PreToolUse — sem alteracoes.")
-    else:
-        hook_entry = _build_hook_entry(hook_dest)
-        pre_tool_use_list.insert(0, hook_entry)
+    for hook_type in used_hook_types:
+        hook_type_list = hooks_section.setdefault(hook_type, [])
+        is_already_registered = _check_already_registered(hook_type_list)
+        if is_already_registered:
+            skipped_in.append(hook_type)
+        else:
+            hook_entry = _build_hook_entry(hook_dest)
+            hook_type_list.insert(0, hook_entry)
+            registered_in.append(hook_type)
+
+    has_changes = bool(registered_in)
+    if has_changes:
         updated_content = json.dumps(settings, indent=2, ensure_ascii=False) + "\n"
         settings_file.write_text(updated_content)
-        print(f"✅ PreToolUse hook registrado em: {settings_file}")
+        for hook_type in registered_in:
+            print(f"✅ {hook_type} hook registrado em: {settings_file}")
+
+    for hook_type in skipped_in:
+        print(f"⚠️  enforce-gate ja registrado em {hook_type} — sem alteracoes.")
 
     print()
     print("Instalacao concluida!")
     print()
-    print("Gates carregados de:")
-    print(f"  ~/.claude/enforce-gates.yml  (global)")
-    print(f"  .claude/enforce-gates.yml    (project-local, se existir)")
+    print("Gates carregados de (todos mergeados):")
+    print("  ~/.claude/enforce-gates.yml  (global)")
+    print("  .claude/enforce-gates.yml    (project-local, se existir)")
     print()
     print("Para adicionar gates: edite enforce-gates.yml e adicione entradas em 'gates:'")
-    print(f"Para desinstalar: remova a entrada 'enforce-gate' de PreToolUse em {settings_file}")
+    print("Para desinstalar: remova as entradas 'enforce-gate' dos hook types em:")
+    print(f"  {settings_file}")
 
 
 if __name__ == "__main__":
