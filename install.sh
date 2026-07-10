@@ -26,3 +26,15 @@ fi
 bash "$SCRIPTS_DIR/sync-files.sh" "$SCOPE" "claude-themes"        "*.json" "themes"
 bash "$SCRIPTS_DIR/sync-files.sh" "$SCOPE" "claude-output-styles"  "*.md"   "output-styles"
 bash "$SCRIPTS_DIR/install-hooks.sh"
+
+# Claude Code hooks (enforce-gate + pre-edit-lint)
+if ! command -v python3 &>/dev/null; then
+  echo "==> python3 not found, skipping Claude Code hooks install"
+else
+  case "$SCOPE" in
+    user)  HOOK_SCOPE="global" ;;
+    local) HOOK_SCOPE="local" ;;
+  esac
+  echo "==> installing Claude Code hooks (scope: $HOOK_SCOPE)"
+  python3 "$REPO_DIR/claude-hooks/install.py" --scope "$HOOK_SCOPE"
+fi

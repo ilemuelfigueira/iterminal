@@ -103,6 +103,19 @@ for file in "$REPO_DIR/claude-output-styles"/*.md; do
   done
 done
 
+# Gate 4: python hooks (syntax, sem gerar __pycache__)
+echo "==> python hooks"
+if command -v python3 &>/dev/null; then
+  while IFS= read -r -d '' file; do
+    if ! python3 -c "import sys; compile(open(sys.argv[1]).read(), sys.argv[1], 'exec')" "$file" 2>/dev/null; then
+      echo "  FAIL: $(basename "$file") — erro de sintaxe Python"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done < <(find "$REPO_DIR/claude-hooks" -name "*.py" -not -path "*/.git/*" -print0)
+else
+  echo "  aviso: python3 não encontrado — pulando"
+fi
+
 echo ""
 if [[ "$ERRORS" -gt 0 ]]; then
   echo "validate: $ERRORS erro(s) encontrado(s)"
