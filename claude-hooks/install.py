@@ -66,11 +66,12 @@ pre_edit_lint_descriptor = HookDescriptor(
 HOOK_DESCRIPTORS = [enforce_gate_descriptor, pre_edit_lint_descriptor]
 
 
-def _scope_to_settings_path(scope: str) -> Path:
+def _scope_to_settings_path(scope: str, use_local_file: bool) -> Path:
+    filename = "settings.local.json" if use_local_file else "settings.json"
     is_global = scope == "global"
     if is_global:
-        return Path.home() / ".claude" / "settings.json"
-    return Path(".claude") / "settings.json"
+        return Path.home() / ".claude" / filename
+    return Path(".claude") / filename
 
 
 def _parse_args() -> argparse.Namespace:
@@ -82,6 +83,11 @@ def _parse_args() -> argparse.Namespace:
         choices=["global", "local", "repo"],
         default="local",
         help="Where to register the hooks (default: local)",
+    )
+    parser.add_argument(
+        "--local-file",
+        action="store_true",
+        help="Escreve em settings.local.json ao inves de settings.json",
     )
     return parser.parse_args()
 
@@ -150,12 +156,31 @@ def _resolve_hook_types(descriptor: HookDescriptor, source_dir: Path) -> list:
     return list(DEFAULT_HOOK_TYPES)
 
 
-def _check_already_registered(hook_type_list: list, command_needle: str) -> bool:
-    return any(
-        command_needle in hook.get("command", "")
-        for entry in hook_type_list
-        for hook in entry.get("hooks", [])
-    )
+def _find_registered_entries(hook_type_list: list, command_needle: str) -> list:
+    matching_entries = []
+    for entry in hook_type_list:
+        hooks = entry.get("hooks", [])
+        has_needle = any(command_needle in hook.get("command", "") for hook in hooks)
+        if has_needle:
+            matching_entries.append(entry)
+    return matching_entries
+
+
+def _migrate_entry_matcher(entry: dict, hook_type: str, tool_matcher: str) -> bool:
+    is_tool_based = hook_type in TOOL_BASED_HOOK_TYPES
+    if is_tool_based:
+        current_matcher = entry.get("matcher")
+        is_correct = current_matcher == tool_matcher
+        if is_correct:
+            return False
+        entry["matcher"] = tool_matcher
+        return True
+
+    has_stray_matcher = "matcher" in entry
+    if has_stray_matcher:
+        del entry["matcher"]
+        return True
+    return False
 
 
 def _build_hook_entry(hook_dest: Path, hook_type: str, tool_matcher: str) -> dict:
@@ -211,16 +236,26 @@ def _register_hook(
 ) -> tuple:
     registered_in = []
     skipped_in = []
+    migrated_in = []
     for hook_type in hook_types:
         hook_type_list = hooks_section.setdefault(hook_type, [])
-        is_already_registered = _check_already_registered(hook_type_list, descriptor.command_needle)
+        existing_entries = _find_registered_entries(hook_type_list, descriptor.command_needle)
+        is_already_registered = bool(existing_entries)
         if is_already_registered:
-            skipped_in.append(hook_type)
+            was_migrated = False
+            for entry in existing_entries:
+                did_fix = _migrate_entry_matcher(entry, hook_type, descriptor.tool_matcher)
+                if did_fix:
+                    was_migrated = True
+            if was_migrated:
+                migrated_in.append(hook_type)
+            else:
+                skipped_in.append(hook_type)
         else:
             hook_entry = _build_hook_entry(hook_dest, hook_type, descriptor.tool_matcher)
             hook_type_list.insert(0, hook_entry)
             registered_in.append(hook_type)
-    return registered_in, skipped_in
+    return registered_in, skipped_in, migrated_in
 
 
 def main() -> None:
@@ -229,7 +264,7 @@ def main() -> None:
 
     source_dir = Path(__file__).parent.resolve()
     hooks_dest_dir = Path.home() / ".claude" / "hooks"
-    settings_file = _scope_to_settings_path(scope)
+    settings_file = _scope_to_settings_path(scope, args.local_file)
 
     print("🔧 Instalando iterminal Claude Code hooks...")
     print(f"   Scope    : {scope}")
@@ -260,6 +295,7 @@ def main() -> None:
 
     hooks_section = settings.setdefault("hooks", {})
     total_registered = []
+    total_migrated = []
 
     for descriptor in HOOK_DESCRIPTORS:
         hook_dest = _copy_hook_script(descriptor, source_dir, hooks_dest_dir)
@@ -268,17 +304,20 @@ def main() -> None:
         hook_types = _resolve_hook_types(descriptor, source_dir)
         print(f"🔍 {descriptor.key}: hook types → {', '.join(hook_types)}")
 
-        registered_in, skipped_in = _register_hook(
+        registered_in, skipped_in, migrated_in = _register_hook(
             descriptor, hook_dest, hook_types, hooks_section
         )
         for hook_type in registered_in:
             print(f"✅ {descriptor.key} registrado em {hook_type}")
             total_registered.append((descriptor.key, hook_type))
+        for hook_type in migrated_in:
+            print(f"🔧 {descriptor.key} em {hook_type}: matcher corrigido (migracao).")
+            total_migrated.append((descriptor.key, hook_type))
         for hook_type in skipped_in:
             print(f"⚠️  {descriptor.key} ja registrado em {hook_type} — sem alteracoes.")
         print()
 
-    has_changes = bool(total_registered)
+    has_changes = bool(total_registered) or bool(total_migrated)
     if has_changes:
         updated_content = json.dumps(settings, indent=2, ensure_ascii=False) + "\n"
         settings_file.write_text(updated_content)
