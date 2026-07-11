@@ -154,8 +154,13 @@ def _extract_trigger_value(hook_type: str, payload: dict, gate: dict) -> str:
     is_file_based = is_pre_tool_use or is_post_tool_use
     if is_file_based:
         tool_input = payload.get("tool_input", {})
-        file_path = tool_input.get("file_path") or tool_input.get("path") or ""
-        return file_path
+        trigger_value = (
+            tool_input.get("file_path")
+            or tool_input.get("path")
+            or tool_input.get("pattern")
+            or ""
+        )
+        return trigger_value
 
     is_user_prompt_submit = hook_type == "UserPromptSubmit"
     if is_user_prompt_submit:
@@ -341,6 +346,20 @@ def _apply_gate(gate: dict, defaults: dict, trigger_value: str) -> None:
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
+def _collect_intercepted_tools(config: dict, default_tools: list) -> set:
+    intercepted_tools: set = set()
+    for gate in config.get("gates", []):
+        is_enabled = gate.get("enabled", True)
+        if not is_enabled:
+            continue
+        gate_tools = gate.get("tools", default_tools)
+        intercepted_tools.update(gate_tools)
+    has_intercepted = bool(intercepted_tools)
+    if not has_intercepted:
+        return set(default_tools)
+    return intercepted_tools
+
+
 def main() -> None:
     try:
         payload = json.load(sys.stdin)
@@ -356,11 +375,12 @@ def main() -> None:
 
     defaults = config.get("defaults", {})
     default_tools = defaults.get("tools", list(DEFAULT_TOOLS))
+    intercepted_tools = _collect_intercepted_tools(config, default_tools)
 
     is_tool_based_hook = hook_type in ("PreToolUse", "PostToolUse")
     if is_tool_based_hook:
         tool_name = payload.get("tool_name", "")
-        is_intercepted_tool = tool_name in default_tools
+        is_intercepted_tool = tool_name in intercepted_tools
         if not is_intercepted_tool:
             sys.exit(0)
 
